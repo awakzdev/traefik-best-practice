@@ -1,0 +1,50 @@
+name: Push to GHCR Registry
+
+on:
+  push:
+    branches:
+      '*'
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    env:
+      REGISTRY: ghcr.io/awakzdev/traefik-best-practice
+      
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+        
+      - name: Set outputs
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Check outputs
+        run: echo ${{ steps.vars.outputs.sha_short }}
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build and push Docker image for blue
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.blue
+          push: true
+          tags: |
+            "${{ env.REGISTRY }}/${{ github.ref_name }}/blue:latest"
+            "${{ env.REGISTRY }}/${{ github.ref_name }}/blue:${{ steps.vars.outputs.sha_short }}"
+
+      - name: Build and push Docker image for green
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.green
+          push: true
+          tags: |
+            "${{ env.REGISTRY }}/${{ github.ref_name }}/green:latest"
+            "${{ env.REGISTRY }}/${{ github.ref_name }}/green:${{ steps.vars.outputs.sha_short }}"

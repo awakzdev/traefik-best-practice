@@ -1,0 +1,8 @@
+# Ignore directory for MariaDB data
+mariadb-data/
+
+# Other common ignore patterns
+node_modules/
+*.log
+*.cache
+.DS_Store

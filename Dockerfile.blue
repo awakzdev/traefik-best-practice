@@ -1,0 +1,19 @@
+# Use the PHP Apache base image
+FROM php:8.0-apache
+
+# Set the working directory to /var/www/html
+WORKDIR /var/www/html
+
+# Copy the application files from the blue directory
+COPY src/blue/ .
+
+# Install any necessary extensions or packages
+RUN docker-php-ext-install pdo_mysql
+RUN a2enmod rewrite
+
+# Expose the port Apache is listening on
+EXPOSE 80
+EXPOSE 443
+
+# Set the container to run Apache in the foreground
+CMD ["apache2-foreground"]

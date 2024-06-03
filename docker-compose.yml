@@ -1,0 +1,105 @@
+version: '3.8'
+
+networks:
+  proxy:
+    name: proxy
+    driver: bridge
+ 
+services:
+  php-green:
+    image: ghcr.io/awakzdev/traefik-best-practice/main/green:latest
+    pull_policy: always
+    container_name: php-green
+    labels:
+      - "traefik.enable=true"
+    networks:
+      - proxy
+    depends_on:
+      - traefik
+      - mariadb
+
+  php-blue:
+    image: ghcr.io/awakzdev/traefik-best-practice/main/blue:latest
+    pull_policy: always
+    container_name: php-blue
+    labels:
+      - "traefik.enable=true"
+    networks:
+      - proxy
+    depends_on:
+      - traefik
+      - mariadb
+
+  traefik:
+    image: traefik:v2.11
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.file.directory=/etc/traefik/dynamic/"
+      - "--providers.file.watch=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.docker.network=proxy"
+      - "--providers.docker.exposedByDefault=false"
+      - "--log.level=INFO"
+      - "--accesslog=true"
+    # Reserved for certificate signing
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=route53"
+      - "--certificatesresolvers.letsencrypt.acme.email=elazar.chodjayev@cloud-castles.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/acme.json"
+      # - "--certificatesresolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+    labels:
+      # HTTPS
+      - "traefik.http.routers.https.rule=Host(`traefik.domain.com`)" # Exposes dashboard on HTTPS
+      - "traefik.http.routers.https.entrypoints=websecure"
+      - "traefik.http.routers.https.tls=true"
+      - "traefik.http.routers.https.service=api@internal"
+      - "traefik.http.routers.https.middlewares=https-auth"
+      - "traefik.http.middlewares.https-auth.basicauth.users=test:$$apr1$$QwfL7LRp$$hHs7EN6WTrvHJHvGWj5Jg0"
+      # global redirect to https
+      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      # middleware redirect
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.https_redirect.redirectscheme.permanent=true"
+      # redirect www to non-www
+      - "traefik.http.routers.www-redirect.rule=Host(`www.domain.com`)"
+      - "traefik.http.routers.www-redirect.entrypoints=web"
+      - "traefik.http.routers.www-redirect.entrypoints=websecure"
+    environment:
+      - TRAEFIK_CERTIFICATESRESOLVERS_LE_ACME_STORAGE=/acme/acme.json
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080" # Traefik Dashboard
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik/:/etc/traefik/dynamic/
+      - acme:/acme
+    networks:
+      - proxy
+
+  mariadb:
+    image: mariadb:11.2
+    ports:
+      - "3306:3306"
+    container_name: mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=mariadb
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=admin
+    volumes:
+      - ./mariadb-data:/var/lib/mysql
+    networks:
+      - proxy
+    restart: always
+
+volumes:
+  acme:

@@ -1,0 +1,30 @@
+http:
+  middlewares:
+    nc-middlewares-secure-headers:
+      headers:
+        hostsProxyHeaders:
+          - "X-Forwarded-Host"
+        referrerPolicy: "same-origin"
+        customResponseHeaders:
+          X-Robots-Tag: "none"
+
+    middlewares-rate-limit:
+      rateLimit:
+        average: 100
+        burst: 200
+
+    chain-no-auth:
+      chain:
+        middlewares:
+          - middlewares-rate-limit
+          - nc-middlewares-secure-headers
+
+    retry:
+      retry:
+        attempts: 3
+
+    redirect-to-non-www:
+      redirectRegex:
+        regex: "^https?://www\\.(.*)"
+        replacement: "https://$1"
+        permanent: true

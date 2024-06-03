@@ -1,0 +1,23 @@
+http:
+  services:
+    app:
+      loadBalancer:
+        healthCheck:
+          path: /health
+          interval: "10s"
+          timeout: "3s"
+        servers:
+          - url: "http://php-blue"
+          - url: "http://php-green"
+
+  routers:
+    app-router:
+      rule: "Host(`domain.com`)"
+      service: "app"
+      entryPoints:
+        - "web"
+        - "websecure"
+      tls:
+        certResolver: letsencrypt
+        domains:
+          - main: "domain.com"
