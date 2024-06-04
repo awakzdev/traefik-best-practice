@@ -44,7 +44,7 @@ services:
       - "--providers.docker.exposedByDefault=false"
       - "--log.level=INFO"
       - "--accesslog=true"
-    # Reserved for certificate signing
+      # Reserved for certificate signing
       - "--certificatesresolvers.letsencrypt.acme.dnschallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=route53"
       - "--certificatesresolvers.letsencrypt.acme.email=elazar.chodjayev@cloud-castles.com"
