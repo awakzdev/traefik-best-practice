@@ -12,12 +12,13 @@ http:
 
   routers:
     app-router:
-      rule: "Host(`domain.com`)"
+      rule: "Host(`app.localhost`)"
       service: "app"
       entryPoints:
         - "web"
         - "websecure"
-      tls:
-        certResolver: letsencrypt
-        domains:
-          - main: "domain.com"
+      # tls:
+      #   certResolver: letsencrypt
+      #   domains:
+      #     - main: "test.cclab.cloud-castles.com"
+

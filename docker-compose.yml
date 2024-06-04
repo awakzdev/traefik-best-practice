@@ -52,7 +52,7 @@ services:
       # - "--certificatesresolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
     labels:
       # HTTPS
-      - "traefik.http.routers.https.rule=Host(`traefik.domain.com`)" # Exposes dashboard on HTTPS
+      - "traefik.http.routers.https.rule=Host(`traefik.app.localhost`)" # Exposes dashboard on HTTPS
       - "traefik.http.routers.https.entrypoints=websecure"
       - "traefik.http.routers.https.tls=true"
       - "traefik.http.routers.https.service=api@internal"
@@ -66,9 +66,9 @@ services:
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "traefik.http.middlewares.https_redirect.redirectscheme.permanent=true"
       # redirect www to non-www
-      - "traefik.http.routers.www-redirect.rule=Host(`www.domain.com`)"
-      - "traefik.http.routers.www-redirect.entrypoints=web"
-      - "traefik.http.routers.www-redirect.entrypoints=websecure"
+      # - "traefik.http.routers.www-redirect.rule=Host(`www.domain.com`)"
+      # - "traefik.http.routers.www-redirect.entrypoints=web"
+      # - "traefik.http.routers.www-redirect.entrypoints=websecure"
     environment:
       - TRAEFIK_CERTIFICATESRESOLVERS_LE_ACME_STORAGE=/acme/acme.json
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
