@@ -2,12 +2,6 @@
 
 This project demonstrates a blue-green deployment strategy using Docker Compose and Traefik to achieve zero-downtime updates. The setup includes MariaDB with two versions of a PHP application served by Apache, and Traefik routing traffic.
 
-**Before you run the application please make sure to swap the `domain.com` with your appropriate domain name from the following files :**
-```
-  - traefik/dynamic.yml
-  - docker-compose.yml
-```
-
 ![Topology](topology.png)
 
 ## Table of Contents
@@ -42,12 +36,18 @@ This project demonstrates a blue-green deployment strategy using Docker Compose 
 ```
 
 ## Running the Services
-1. Start the services in detached mode:
+1. **Update Domain Configuration** - Edit the following files to match your domain:
+   ```
+   - traefik/dynamic.yml
+   - docker-compose.yml (for the Traefik dashboard on Traefik's container)
+   ```
+
+2. Start the services in detached mode:
 `docker-compose up -d`
 
-2. Access the green and blue pages: http://domain.com
+3. Access the green and blue pages at : http://app.localhost (or your specified domain)
 
-3. Traefik dashboard should be accessible at : http://traefik.domain.com
+4. Traefik dashboard should be accessable at : http://traefik.app.localhost
 
 ## Updating the Application with Zero Downtime
 ### Blue-Green Deployment Strategy
